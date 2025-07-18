@@ -30,17 +30,47 @@ for num in range(len(unsorted_copy)):
     sorted_list.append(num_to_append)
     unsorted_copy.remove(num_to_append)
 
+# 2. Alternative approach.
+
+alt_unsorted_copy = list(number_list)
+
+# Do the outer loop X times, equal to length of original list.
+# Inner loop will loop through numbers from index 0 of the list till the end, and with each outer loop the end will shrink to avoid looping through already sorted items.
+# If statement checks for adjacent numbers and will flip their position if predeceasing number is greater than following.
+
+for i in range(len(alt_unsorted_copy)):
+    for j in range(0, len(alt_unsorted_copy) - i - 1):
+        if alt_unsorted_copy[j] > alt_unsorted_copy[j + 1]:
+            alt_unsorted_copy[j], alt_unsorted_copy[j + 1] = alt_unsorted_copy[j + 1], alt_unsorted_copy[j]
+
+# Just to validate if both lists are the same.
+
+try:
+    assert alt_unsorted_copy == sorted_list, 'Something went wrong with list sorting.'
+
+except AssertionError as e:
+    print(e)
+
 # 3. Calculate average for even and odd numbers
 
 # Create lists with even and odd numbers
 
 even_list = [number for number in sorted_list if number % 2 == 0]
-odd_list = [number for number in sorted_list if number not in even_list]
+odd_list = [number for number in sorted_list if number %2 != 0]
 
-# Calculate averages for numbers in even and odd lists
+# Calculate averages for numbers in even and odd lists. Adding error handling in case either of the lists is empty
 
-even_number_average = sum(even_list) / len(even_list)
-odd_list_average = sum(odd_list) / len(odd_list)
+try:
+    even_number_average = sum(even_list) / len(even_list)
+
+except ZeroDivisionError:
+    even_number_average = 0
+
+try:
+    odd_list_average = sum(odd_list) / len(odd_list)
+
+except ZeroDivisionError:
+    odd_list_average = 0
 
 # 4. Print both average results in console
 
