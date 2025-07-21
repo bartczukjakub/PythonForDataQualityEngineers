@@ -22,68 +22,40 @@ from pprint import pprint
 dict_list = []
 
 # Loop to create from 2 to 10 dictionaries
+# Creates key based on list of 2-10 random letters from a - o
+# Creates value based on random number from 0 - 100
 
-for i in range(random.randint(2,10)):
-    dict_sample = {}
+dict_list = [
+    {
+        key: random.randint(0,100)
+        for key in random.sample(string.ascii_lowercase[:15], random.randint(2,10))
+    }
 
-    # Loop to create from 2 to 10 randomized keys
+    for _ in range(random.randint(2,10))
 
-    for i in range(random.randint(2,10)):
-
-        # Random letter will be assigned as a key. Reducing number of letters to A - O to increase keys overlap within dictionaries.
-
-        dict_key = random.choice(string.ascii_lowercase[:15])
-
-        # Checks if the letter was already used
-
-        while dict_key in dict_sample.keys():
-            dict_key = random.choice(string.ascii_lowercase[:10])
-
-        # Assigns random value as integer from 0 to 100 to a key
-
-        dict_value = random.randint(0,100)
-        dict_sample[dict_key] = dict_value
-
-    # Appends dictionary to main list
-
-    dict_list.append(dict_sample)
-
+]
 
 # 2. get previously generated list of dicts and create one common dict:
 
 # Inverted Index is the answer?
-# The idea is to create a dictionary with all unique keys from dictionaries within original list, with information in which dictionary form the original list did the key appear, and what was it's value.
+# The idea is to create a dictionary with all unique keys from dictionaries within original list, with information in which dictionary (form the original list) did the key appear, and what was its value.
 
-# Create empty list and populate it with all keys from every single dictionary
+# Create set and populate it with all keys from every single dictionary
 
-keys_list = []
-
-for single_dict in dict_list:
-    keys_list += (key for key in single_dict.keys())
-
-# Create set based on sorted list to remove duplicate and make future dictionary cleaner
-
-keys_set = set(sorted(keys_list))
+keys_list = {key for d in dict_list for key in d.keys()}
 
 # Create dictionary with empty lists based on all keys from set
 
-inverted_keys_dict = {k: [] for k in keys_set}
+inverted_keys_dict = {k: [] for k in keys_list}
 
-# Loop through all keys and then through all dictionaries in the initially created list.
+# Loop through all separate dictionaries in original dict_list via enumerate to also get index id. Adding start to match formatting criteria for final dictionary keys.
 
-for key in inverted_keys_dict.keys():
-    for single_dict in dict_list:
+for dict_id, single_dict in enumerate(dict_list, start = 1):
 
-        # Creating dictionary id based on it's index within original list
+    # Adding key value pairs from separate dictionaries into inverted index
 
-        dict_id = dict_list.index(single_dict) + 1
-
-        # Looping through separate dictionaries from original list to validate if keys within this dictionary match with keys from inverted index dictionary (inverted_keys_dict).
-        # If so, add dict_id and value to the inverted index.
-
-        for k, v in single_dict.items():
-            if k == key:
-                inverted_keys_dict[key].append([dict_id, v])
+    for key in single_dict:
+        inverted_keys_dict[key].append([dict_id, single_dict[key]])
 
 # Once again, the end result of the above loop is dictionary with all unique keys from dictionaries within original list, with information in which dictionary form the original list did the key appear, and what was it's value.
 # Printing dict to see the collection
@@ -95,20 +67,19 @@ final_dict = {}
 # Now we loop through values for each key.
 # If key has only one value then the key remains the same, and it's value is pulled from first item in the list.
 
-for key, value in inverted_keys_dict.items():
-    if len(value) == 1:
-        final_value = value[0][1]
-        final_dict[key] = final_value
+for key, entries in inverted_keys_dict.items():
+    if len(entries) == 1:
+        final_dict[key] = entries[0][1]
 
     # If length of the value list is greater than 1 then we create "final" key and value based on first item within the list, with appropriate format. Addint +1 to the index value to match criteria.
     # Next we loop through all other lists to validate if there's another list (original dictionary) with greater value than the first one. If so, this pair becomes the "final" key value pair
 
     else:
-        final_key = f'{key}_{value[0][0]+1}'
-        final_value = value[0][1]
-        for inner_list in value:
+        final_key = f'{key}_{entries[0][0]}'
+        final_value = entries[0][1]
+        for inner_list in entries:
             if inner_list[1] > final_value:
-                final_key = f'{key}_{inner_list[0]+1}'
+                final_key = f'{key}_{inner_list[0]}'
                 final_value = inner_list[1]
 
         # Once the inner loop finishes, the final final key value pair is added to the final dictionary
