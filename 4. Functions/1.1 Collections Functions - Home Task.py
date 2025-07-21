@@ -1,2 +1,0 @@
-#  Refactor homeworks from module 2 and 3 using functional approach with decomposition.
-
