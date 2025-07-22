@@ -78,17 +78,14 @@ def count_whitespaces(input_text: str) -> str:
 
 if __name__ == '__main__':
 
-    with open('./input_string', 'r', encoding='utf8') as file:
-        file_body = file.read()
+    with (open('./input_string', 'r', encoding='utf8') as file):
 
-        print(create_sentence_from_last_word_in_each_sentence(
-                replace_string(
-                    trim_and_capitalize_text(
-                        remove_non_ascii_string(file_body)
-                    ),
-                'iz', 'is')
-                )
-            )
+        cleaned = remove_non_ascii_string(file_body := file.read())
+        trimmed = trim_and_capitalize_text(cleaned)
+        replaced_string = replace_string(trimmed, 'iz', 'is')
+        final_text = create_sentence_from_last_word_in_each_sentence(replaced_string)
+
+        print(final_text)
 
     # Counter
 
