@@ -2,7 +2,7 @@
 
 # Ensure that functions have proper docstrings, type hints and return annotation.
 
-def dirty_string_to_separate_sentences(text_input: str) -> str:
+def remove_non_ascii_string(text_input: str) -> str:
     """
     Breaks down input string, removes non-ASCII characters except “ and ” special double quotes, joins characters back.
 
@@ -31,14 +31,14 @@ def trim_and_capitalize_text(input_text: str) -> str:
     return cleaned_text
 
 
-def string_replacer(input_string: str, str_replace_from: str, str_replace_to: str) -> str:
+def replace_string(input_string: str, str_replace_from: str, str_replace_to: str) -> str:
     """
     Replaces old string with new one and returns text in the same format.
 
     :param input_string: Structured text with dots between sentences.
     :param str_replace_from: String that will be replaced.
     :param str_replace_to: String that will be used instead.
-    :return: Text with replaced strings
+    :return: Text with replaced strings.
     """
 
     new_text_list = []
@@ -65,42 +65,31 @@ def create_sentence_from_last_word_in_each_sentence(text_split_to_lines: str) ->
     return text_split_to_lines + ' ' + new_sentence
 
 
-def whitespace_counter(input_text: str) -> str:
-    count = sum(1 for char in input_text if char.isspace())
-    return f'Total number of whitespaces in the text = {count}.'
+def count_whitespaces(input_text: str) -> str:
+    """
+    Counts number of whitespaces used in text utilizing char.isspace() method.
+
+    :param input_text: Text from which whitespaces will be count.
+    :return: Text with count of whitespaces.
+    """
+
+    return f'Total number of whitespaces in the text = {sum(1 for char in input_text if char.isspace())}.'
 
 
+if __name__ == '__main__':
 
-print(create_sentence_from_last_word_in_each_sentence(string_replacer(trim_and_capitalize_text(dirty_string_to_separate_sentences("""  tHis iz your homeWork, copy these Text to variable.
+    with open('./input_string', 'r', encoding='utf8') as file:
+        file_body = file.read()
 
+        print(create_sentence_from_last_word_in_each_sentence(
+                replace_string(
+                    trim_and_capitalize_text(
+                        remove_non_ascii_string(file_body)
+                    ),
+                'iz', 'is')
+                )
+            )
 
+    # Counter
 
-  You NEED TO normalize it fROM letter CASEs point oF View. also, create one MORE senTENCE witH LAST WoRDS of each existING SENtence and add it to the END OF this Paragraph.
-
-
-
-  it iZ misspeLLing here. fix“iZ” with correct “is”, but ONLY when it Iz a mistAKE.
-
-
-
-  last iz TO calculate nuMber OF Whitespace characteRS in this Tex. caREFULL, not only Spaces, but ALL whitespaces. I got 87.""")),
-
-    # parameters go below
-                                         'iz', 'is')))
-
-
-# Counter
-
-print(whitespace_counter("""  tHis iz your homeWork, copy these Text to variable.
-
-
-
-  You NEED TO normalize it fROM letter CASEs point oF View. also, create one MORE senTENCE witH LAST WoRDS of each existING SENtence and add it to the END OF this Paragraph.
-
-
-
-  it iZ misspeLLing here. fix“iZ” with correct “is”, but ONLY when it Iz a mistAKE.
-
-
-
-  last iz TO calculate nuMber OF Whitespace characteRS in this Tex. caREFULL, not only Spaces, but ALL whitespaces. I got 87."""))
+        print(count_whitespaces(file_body))
