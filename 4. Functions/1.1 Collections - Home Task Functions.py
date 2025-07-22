@@ -89,10 +89,9 @@ def create_final_dictionary(inverted_index_dict: Dict[str, List[List[int]]]) -> 
 
 
 if __name__ == '__main__':
-    result = create_final_dictionary(
-                generate_inverted_index(
-                    generate_dict_list(12)
-                )
-            )
 
-    pprint(result)
+    dict_list = generate_dict_list(12)
+    generate_inverted_index = generate_inverted_index(dict_list)
+    final_dict = create_final_dictionary(generate_inverted_index)
+
+    pprint(final_dict)
