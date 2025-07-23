@@ -1,13 +1,13 @@
 News feed: 
 NewsAd Breaking News!
 Bloody hell, I feel like those exercises are a bit more complicated than the examples provided...
-Gdansk, 22/07/2025 17.09
+Gdansk, 23/07/2025 15.53
 
 PrivateAd Nothing to see here.
 I feel like this is where I pause and create some simpler classes to play around with class magic methods.
-Actual until: 31/07/2025, 9 days left.
+Actual until: 31/07/2025, 8 days left.
 
 MatrimonialAd Junior looking for more exercises!
 I guess I'll ask ChatGPT to provide similar exercises and get more practice. Also, setter/getter is slopy, but for today I have information overload :s
-Hot 453/Triceratops in area Cretaceous!
+Hot Triceratops/453 in area Cretaceous!
 
