@@ -9,41 +9,57 @@
 # 3.Your unique one with unique publish rules.
 
 from datetime import datetime
-from typing import Callable
-
-def i_am_out_of_ideas_at_this_hour_decorator(func: Callable) -> Callable:
-    import time
-    def wrapper():
-        """
-        Standard time-calculation wrapper as I'm running out of ideas :S
-
-        :return: Function runtime duration
-        """
-
-        start_time = time.time()
-        func()
-        end_time = time.time()
-        print(f'Execution time is {(end_time - start_time):.04f} seconds.')
-    return wrapper
-
+from typing import final
 
 class FeedItem:
 
     _instances = []
 
-    def __init__(self, title: str, body: str) -> None:
+    def __init__(self) -> None:
         """
-        Main function collects Feed title and body from user, passes it to subclass and then to this super class.
+        Base function for class creation. Empty attributes will be populated by further functions, depending on user's choice.
+        """
+
+        self._title = ''
+        self.title = 'placeholder'
+        self.body = ''
+        self.created_at = ''
+
+    def get_info_manual(self) -> None:
+        """
+        Function for data input manually. Asks user about Feed title and body, and adds timestamp.
         Keeps track of created instances and stores it in a list.
 
-        :param title: Feed title input by user.
-        :param body: Feed message input by user.
+        :return: Populates self title, body and created_at attributes. Record added to the list.
         """
 
-        self.title = title
-        self.body = body
+        self.title = input('Please provide title for your Feed: ')
+        self.body = input('Please provide message for your Feed: ')
         self.created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         FeedItem._instances.append(self)
+
+    @property
+    def title(self) -> str:
+        """
+        Creating setter for title.
+
+        :return: Title string.
+        """
+
+        return self._title
+
+    @title.setter
+    def title(self, value:str) -> None:
+        """
+        Validating whether title is not empty. On empty raise error.
+
+        :param value: Title string.
+        :return: Error if title string is empty.
+        """
+
+        if not value.strip():
+            raise ValueError('Title cannot be empty.')
+        self._title = value.strip()
 
     @property
     def full_title(self) -> str:
@@ -73,29 +89,41 @@ class FeedItem:
                 file.write('\n')
 
 
+@final
 class NewsAd(FeedItem):
-    def __init__(self, title: str, body: str) -> None:
+    def __init__(self) -> None:
         """
-        Subclass for News Ad. Asks user about City and adds standardized information regarding City and current date for the News. Yes this could be one-liner but IMO it's a bit more clear if we break it down.
-
-        :param title: Feed title input by user.
-        :param body: Feed message input by user.
+        Subclass for News Ad.
         """
 
-        super().__init__(title, body)
+        super().__init__()
+        self.additional_information = ''
+
+    def get_additional_info_manual(self) -> None:
+        """
+        Asks user about City, gets current date and creates standardized information for the Feed.
+
+        :return: Populates additional_information attribute.
+        """
+
         city = input('Please provide City location for your News Ad: ')
         self.additional_information = f'{city}, {datetime.today().strftime("%d/%m/%Y %H.%M")}'
 
 
 class PrivateAd(FeedItem):
-    def __init__(self, title: str, body: str) -> None:
+    def __init__(self) -> None:
         """
-        Subclass for Private Ad. Asks user for expiration date of the Ad and calculates days remaining.
+        Subclass for Private Ad.
+        """
+        super().__init__()
+        self.additional_information = ''
 
-        :param title: Feed title input by user.
-        :param body: Feed message input by user.
+    def get_additional_info_manual(self) -> None:
+        """"
+        Asks user for expiration date of the Ad and calculates days remaining and creates standardized information string for the Feed.
+
+        :return: Populates additional_information attribute.
         """
-        super().__init__(title, body)
 
         expiration = input('Please provide expiration date for your Private Ad (format dd/mm/YYYY): ')
         expiration_date = datetime.strptime(expiration, "%d/%m/%Y").date()
@@ -105,15 +133,20 @@ class PrivateAd(FeedItem):
 
 
 class MatrimonialAd(FeedItem):
-    def __init__(self, title: str, body: str) -> None:
+    def __init__(self) -> None:
         """
-        Subclass for Matrimonial Ad. Asks user for gender, age and city.
-
-        :param title: Feed title input by user.
-        :param body: Feed message input by user.
+        Subclass for Matrimonial Ad.
         """
 
-        super().__init__(title, body)
+        super().__init__()
+        self.additional_information = ''
+
+    def get_additional_info_manual(self) -> None:
+        """
+        Asks user for gender, age and city and creates standardized information string for the Feed.
+
+        :return: Populates additional_information attribute.
+        """
 
         gender = input('Please provide your gender: ')
         age = input('Please provide your age: ')
@@ -121,7 +154,6 @@ class MatrimonialAd(FeedItem):
         self.additional_information = f'Hot {gender}/{age} in area {city}!'
 
 
-@i_am_out_of_ideas_at_this_hour_decorator
 def create_feed() -> FeedItem:
     """
     Main function which will trigger instance creation for specific class based on user's input. Will ask for input as long as user doesn't provide correct Feed type.
@@ -135,14 +167,16 @@ def create_feed() -> FeedItem:
 	}
 
     while True:
-        choice = input('1 - News\n2 - Private Ad\n3 - Matrimonial Ad\nPlease input feed type number: ')
+        choice = input('1 - News\n2 - Private Ad\n3 - Matrimonial Ad\nPlease input Feed type number: ')
         if choice in type_map:
             feed_class = type_map.get(choice)
-            title = input('Please provide title for your feed: ')
-            body = input('Please provide message for your feed: ')
-            return feed_class(title, body)
+            new_feed = feed_class()
+            new_feed.get_info_manual()
+            new_feed.get_additional_info_manual()
+            return new_feed
 
         print(f'Invalid Choice, please select one of the below:')
+
 
 if __name__ == '__main__':
     ads_num = int(input('How many ads do you want to create?: '))
