@@ -284,7 +284,10 @@ def create_feed() -> FeedItem:
 
 if __name__ == '__main__':
 
-    # Copy sample files to processing folder
+    # Creates dir 'Files to process' if it doesn't exist. Copies sample files to processing folder.
+
+    if not os.path.exists('./Files to process'):
+        os.makedirs('./Files to process')
 
     for file in os.listdir('./Sample files'):
         shutil.copyfile(f'./Sample files/{file}', f'./Files to process/{file}')
