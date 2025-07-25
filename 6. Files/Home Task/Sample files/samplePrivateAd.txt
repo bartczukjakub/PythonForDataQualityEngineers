@@ -1,0 +1,1 @@
+Nothing to see here. I feel like this is where I pause and create some simpler classes to play around with class magic methods. 31/07/2025.
