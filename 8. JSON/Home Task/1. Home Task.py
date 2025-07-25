@@ -1,0 +1,384 @@
+#Create a tool, which will do user generated news feed:
+# 1.User select what data type he wants to add
+# 2.Provide record type required data
+# 3.Record is published on text file in special format
+
+# You need to implement:
+# 1.News – text and city as input. Date is calculated during publishing.
+# 2.Private ad – text and expiration date as input. Day left is calculated during publishing.
+# 3.Your unique one with unique publish rules.
+
+from datetime import datetime
+from typing import final
+import os
+import text_cleaner
+import shutil
+import json
+from pathlib import Path
+
+
+class FeedItem:
+
+    def __init__(self) -> None:
+        """
+        Base function for class creation. Empty attributes will be populated by further functions, depending on user's choice.
+        """
+
+        self._title = ''
+        self.title = 'placeholder'
+        self.body = ''
+        self.created_at = ''
+        self.additional_information = ''
+
+    def get_info_manual(self) -> None:
+        """
+        Function for data input manually. Asks user about Feed title and body, and adds timestamp.
+        Keeps track of created instances and stores it in a list.
+
+        :return: Populates self title, body and created_at attributes. Record added to the list.
+        """
+
+        self.title = input('Please provide title for your Feed: ')
+        self.body = input('Please provide message for your Feed: ')
+        self.created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    @property
+    def title(self) -> str:
+        """
+        Creating setter for title.
+
+        :return: Title string.
+        """
+
+        return self._title
+
+    @title.setter
+    def title(self, value:str) -> None:
+        """
+        Validating whether title is not empty. On empty raise error.
+
+        :param value: Title string.
+        :return: Error if title string is empty.
+        """
+
+        if not value.strip():
+            raise ValueError('Title cannot be empty.')
+        self._title = value.strip()
+
+    @property
+    def full_title(self) -> str:
+        """
+        Dynamically creates full title for a Feed using Class Name and user provided title.
+
+        :return: Full title in standard format.
+        """
+
+        return f'{self.__class__.__name__} {self.title}'
+
+
+    def export_ad_to_file(self, filepath = './feed_output.txt') -> None:
+        """
+        Saves Feed Ad based on info from selected class into a file.
+
+        :param filepath: Path to file where the instance info will be stored.
+        :return: File with summary of Feeds.
+        """
+
+        with open(filepath, 'a', encoding='utf8') as file:
+            file.write(f'{self.full_title}\n')
+            file.write(f'{self.body}\n')
+            file.write(f'{self.additional_information}\n')
+            file.write('\n')
+
+    def export_ad_to_json(self) -> None:
+        """
+        Unnecessary function, I misunderstood the task. Leaving it here just...in case.
+        :return:
+        """
+
+        with open('./json_ad.json', 'r') as json_file:
+            current_json_data = json.load(json_file)
+
+        json_ad_num = f'ad_{len(current_json_data)+1}'
+        json_ad_content = {
+            'title': self.full_title,
+            'body': self.body,
+            'additional_information': self.additional_information
+                   }
+
+        current_json_data[json_ad_num]= json_ad_content
+
+        json.dump(current_json_data, open('./json_ad.json', 'w'))
+
+@final
+class NewsAd(FeedItem):
+    def __init__(self) -> None:
+        """
+        Subclass for News Ad.
+        """
+
+        super().__init__()
+
+    def get_additional_info_manual(self) -> None:
+        """
+        Asks user about City, gets current date and creates standardized information for the Feed.
+
+        :return: Populates additional_information attribute.
+        """
+
+        city = input('Please provide City location for your News Ad: ')
+        self.additional_information = f'{city}, {datetime.today().strftime("%d/%m/%Y %H.%M")}'
+
+    def get_info_from_file(self, file_name: str) -> None:
+        """
+        Takes input from file. Reads file, splits by dot and populates attributes.
+
+        :return: Populates additional_information attribute.
+        """
+
+        with open(file_name, 'r', encoding='utf8') as file:
+            cleaned = text_cleaner.remove_non_ascii_string(file.read())
+            trimmed = text_cleaner.trim_and_capitalize_text(cleaned).replace('.', '.\n')
+
+            self.title = trimmed.splitlines()[0].strip()
+            self.body = trimmed.splitlines()[1].strip()
+            self.additional_information = f'{trimmed.splitlines()[2].strip().replace(".", "")}, {datetime.today().strftime("%d/%m/%Y %H.%M")}'
+
+    def get_info_from_json(self, file_name: str) -> None:
+        """
+        Takes input from JSON file. Reads file, select specific keys and populates attributes.
+
+        :return: Populates additional_information attribute.
+        """
+
+        json_file = json.load(open(file_name))
+        for key,value in json_file.items():
+            self.title = value['title'].strip()
+            self.body = value['body'].strip()
+            city = value['city'].strip()
+            self.additional_information = f'{city}, {datetime.today().strftime("%d/%m/%Y %H.%M")}'
+
+
+class PrivateAd(FeedItem):
+    def __init__(self) -> None:
+        """
+        Subclass for Private Ad.
+        """
+        super().__init__()
+
+    def get_additional_info_manual(self) -> None:
+        """"
+        Asks user for expiration date of the Ad and calculates days remaining and creates standardized information string for the Feed.
+
+        :return: Populates additional_information attribute.
+        """
+
+        expiration = input('Please provide expiration date for your Private Ad (format dd/mm/YYYY): ')
+        expiration_date = datetime.strptime(expiration, "%d/%m/%Y").date()
+        today = datetime.today().date()
+        days_left = (expiration_date - today).days
+        self.additional_information = f'Actual until: {expiration}, {days_left} days left.'
+
+    def get_info_from_file(self, file_name: str) -> None:
+        """
+        Takes input from file. Reads file, splits by dot and populates attributes.
+        :return: Populates additional_information attribute.
+        """
+
+        with open(file_name, 'r', encoding='utf8') as file:
+            cleaned = text_cleaner.remove_non_ascii_string(file.read())
+            trimmed = text_cleaner.trim_and_capitalize_text(cleaned).replace('.', '.\n')
+
+            self.title = trimmed.splitlines()[0].strip()
+            self.body = trimmed.splitlines()[1].strip()
+            expiration = trimmed.splitlines()[2].strip().replace('.', '')
+
+            expiration_date = datetime.strptime(expiration, "%d/%m/%Y").date()
+            today = datetime.today().date()
+            days_left = (expiration_date - today).days
+            self.additional_information = f'Actual until: {expiration}, {days_left} days left.'
+
+    def get_info_from_json(self, file_name: str) -> None:
+        """
+        Takes input from JSON file. Reads file, select specific keys and populates attributes.
+
+        :return: Populates additional_information attribute.
+        """
+
+        json_file = json.load(open(file_name))
+        for key,value in json_file.items():
+            self.title = value['title'].strip()
+            self.body = value['body'].strip()
+            expiration = value['expiration'].strip().replace('.', '')
+
+            expiration_date = datetime.strptime(expiration, "%d/%m/%Y").date()
+            today = datetime.today().date()
+            days_left = (expiration_date - today).days
+            self.additional_information = f'Actual until: {expiration}, {days_left} days left.'
+
+
+class MatrimonialAd(FeedItem):
+    def __init__(self) -> None:
+        """
+        Subclass for Matrimonial Ad.
+        """
+
+        super().__init__()
+
+    def get_additional_info_manual(self) -> None:
+        """
+        Asks user for gender, age and city and creates standardized information string for the Feed.
+
+        :return: Populates additional_information attribute.
+        """
+
+        gender = input('Please provide your gender: ')
+        age = input('Please provide your age: ')
+        city = input('Please provide City: ')
+        self.additional_information = f'Hot {gender}/{age} in area {city}!'
+
+    def get_info_from_file(self, file_name: str) -> None:
+        """
+        Takes input from file. Reads file, splits by dot and populates attributes.
+        :return: Populates additional_information attribute.
+        """
+
+        with open(file_name, 'r', encoding='utf8') as file:
+            cleaned = text_cleaner.remove_non_ascii_string(file.read())
+            trimmed = text_cleaner.trim_and_capitalize_text(cleaned).replace('.', '.\n')
+
+            self.title = trimmed.splitlines()[0].strip()
+            self.body = trimmed.splitlines()[1].strip()
+
+            gender = trimmed.splitlines()[2].strip().replace('.', '')
+            age = trimmed.splitlines()[3].strip().replace('.', '')
+            city  = trimmed.splitlines()[4].strip().replace('.', '')
+            self.additional_information = f'Hot {gender}/{age} in area {city}!'
+
+    def get_info_from_json(self, file_name: str) -> None:
+        """
+        Takes input from JSON file. Reads file, select specific keys and populates attributes.
+
+        :return: Populates additional_information attribute.
+        """
+
+        json_file = json.load(open(file_name))
+        for key,value in json_file.items():
+            self.title = value['title'].strip()
+            self.body = value['body'].strip()
+
+            gender = value['gender'].strip().replace('.', '')
+            age = value['age'].strip().replace('.', '')
+            city  = value['city'].strip().replace('.', '')
+            self.additional_information = f'Hot {gender}/{age} in area {city}!'
+
+def select_file(files_map: dict) -> str:
+    """
+    Helper function for create_feed().
+    Lists available files and asks user to select one. Will validate user's choice and rerun the loop if choice is invalid
+
+    :param files_map: Dictionary with number and file name.
+    :return: File name of user's choice.
+    """
+
+    while True:
+        print(f'Available files:')
+        for key, file_name in files_map.items():
+            print(f'{key} - {file_name}')
+
+        file_choice = input(f'Please input file number: ')
+        if file_choice in files_map:
+            return files_map.get(file_choice)
+
+        print(f'Invalid file, please select one of the below:\n')
+
+
+def create_feed() -> FeedItem:
+    """
+    Main function which will trigger instance creation for specific class based on user's input. Will ask for input as long as user doesn't provide correct Feed type.
+    Users can select Ad type they want to create, and either fill data manually or pull it from file.
+
+    :return: Instance of subclass based on input, along with title and body for the Feed.
+    """
+
+    type_map = {
+		'1': NewsAd,
+		'2': PrivateAd,
+		'3': MatrimonialAd
+	}
+
+    directory = Path('./Files to process')
+
+    txt_files_map = {
+        str(index): file_name
+        for index, file_name in enumerate(
+            [f for f in directory.iterdir() if f.suffix == '.txt'],
+            start= 1
+        )
+    }
+
+    json_files_map = {
+        str(index): file_name
+        for index, file_name in enumerate(
+            [f for f in directory.iterdir() if f.suffix == '.json'],
+            start= 1
+        )
+    }
+
+    while True:
+        feed_type_choice = input('1 - News\n2 - Private Ad\n3 - Matrimonial Ad\nPlease input Feed type number: ')
+        if feed_type_choice in type_map:
+            print('')
+            feed_class = type_map.get(feed_type_choice)
+
+            while True:
+                input_type = input('1 - Manual\n2 - From text file\n3 - From JSON\nPlease select Feed input type: ')
+                print('')
+
+                match input_type:
+                    case '1':
+                        new_feed = feed_class()
+                        new_feed.get_info_manual()
+                        new_feed.get_additional_info_manual()
+                        new_feed.export_ad_to_file()
+                        return new_feed
+
+                    case '2':
+                        selected_file = select_file(txt_files_map)
+                        new_feed = feed_class()
+                        new_feed.get_info_from_file(selected_file)
+                        new_feed.export_ad_to_file()
+
+                        os.remove(selected_file)
+                        return new_feed
+
+                    case '3':
+                        selected_file = select_file(json_files_map)
+                        new_feed = feed_class()
+                        new_feed.get_info_from_json(selected_file)
+                        new_feed.export_ad_to_file()
+
+                        os.remove(selected_file)
+                        return new_feed
+
+                print(f'Invalid Input type, please select one of the below:\n')
+
+        print(f'Invalid Feed type, please select one of the below:\n')
+
+
+if __name__ == '__main__':
+
+    # Creates dir 'Files to process' if it doesn't exist. Copies sample files to processing folder.
+
+    if not os.path.exists('./Files to process'):
+        os.makedirs('./Files to process')
+
+    for file in os.listdir('./Sample files'):
+        shutil.copyfile(f'./Sample files/{file}', f'./Files to process/{file}')
+
+    ads_num = int(input('How many ads do you want to create?: '))
+    print('')
+    for _ in range(ads_num):
+        print(f'Adding Ad {_+1} out of {ads_num}.')
+        feed = create_feed()
+        print('')

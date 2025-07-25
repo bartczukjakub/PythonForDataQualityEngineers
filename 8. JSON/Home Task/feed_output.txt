@@ -1,0 +1,24 @@
+NewsAd NewsAd Breaking news
+Bloody hell, i feel like those exercises are a bit more complicated than the examples provided
+Gdansk, 25/07/2025 16.33
+
+NewsAd Breaking news two.
+Bloody hell, i feel like those exercises are a bit more complicated than the examples provided.
+Gdansk, 25/07/2025 16.34
+
+NewsAd NewsAd Breaking news
+Bloody hell, i feel like those exercises are a bit more complicated than the examples provided
+Gdansk, 25/07/2025 16.34
+
+PrivateAd Just some title from JSON
+Adding here an a message for Private Ad from JSON file.
+Actual until: 31/07/2025, 6 days left.
+
+NewsAd Breaking news from JSON
+Bloody hell, i feel like those exercises are a bit more complicated than the examples provided
+Gdansk, 25/07/2025 16.40
+
+MatrimonialAd Just some title from JSON
+Adding here an a message for Private Ad from JSON file.
+Hot Pterodactylus/156 in area Late Jurassic!
+

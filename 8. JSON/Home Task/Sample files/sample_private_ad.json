@@ -1,0 +1,7 @@
+{
+    "ad_1": {
+        "title": "Just some title from JSON",
+        "body": "Adding here an a message for Private Ad from JSON file.",
+        "expiration": "31/07/2025"
+    }
+}
